@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7e9ee">
+<meta name="description" content="Το προσωπικό σου ημερολόγιο θερμίδων.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>My Calories</title>
+<style>
+:root{--bg:#fff9fb;--card:#fff;--ink:#342b31;--muted:#887b83;--pink:#d982a3;--pink2:#f8e5ed;--line:#f0dce4;--green:#5d9b7a;--shadow:0 8px 26px #5833440d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+header{padding:24px 20px 16px;background:linear-gradient(135deg,#f9e7ee,#fff5f8);border-radius:0 0 28px 28px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}.brand{font-size:24px;font-weight:800;letter-spacing:-.7px}.sub{color:var(--muted);font-size:13px}
+main{max-width:680px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:17px;margin:0 0 14px;box-shadow:var(--shadow)}
+.datebar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}.datebar button{border:0;background:var(--pink2);border-radius:12px;padding:9px 12px;color:var(--ink);font-size:18px}
+.kcal{display:flex;align-items:center;justify-content:space-between;gap:15px}.big{font-size:36px;font-weight:800;letter-spacing:-1px}.muted{color:var(--muted);font-size:13px}
+.progress{height:11px;background:#f5eaf0;border-radius:20px;overflow:hidden;margin:14px 0 8px}.bar{height:100%;width:0;background:linear-gradient(90deg,#d982a3,#e9a6bd);border-radius:20px;transition:width .2s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#fff7fa;border-radius:14px;padding:10px;text-align:center}.stat b{display:block;font-size:17px}
+h2{font-size:17px;margin:0 0 12px}h3{font-size:15px;margin:0}.meal{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-top:1px solid var(--line);gap:10px}.meal:first-of-type{border-top:0}.meal-left{min-width:0}.meal-name{font-weight:650;overflow-wrap:anywhere}.meal-meta{font-size:12px;color:var(--muted)}.meal-kcal{font-weight:700;white-space:nowrap}
+button,.btn{cursor:pointer;border:0;border-radius:13px;padding:12px 15px;background:var(--pink);color:white;font-weight:700;font-size:14px}
+button.secondary{background:var(--pink2);color:#704657}button.ghost{background:transparent;color:var(--muted);padding:7px}
+input,select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;color:var(--ink);font:inherit;min-width:0}
+label{font-size:13px;color:var(--muted);display:block;margin:0 0 5px}.field{margin-bottom:11px}.row{display:flex;gap:9px;align-items:end}.row>*{flex:1}
+.search-results{max-height:230px;overflow:auto;margin-top:8px}.result{padding:10px;border-bottom:1px solid var(--line);cursor:pointer}.result:active{background:var(--pink2)}.result small{display:block;color:var(--muted)}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:#fffdfd;border-top:1px solid var(--line);display:flex;justify-content:center;gap:8px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));z-index:5}.tabs button{flex:1;max-width:180px;background:transparent;color:var(--muted);padding:8px 4px}.tabs button.active{background:var(--pink2);color:#704657}
+.page{display:none}.page.active{display:block}.empty{text-align:center;color:var(--muted);padding:18px 5px;font-size:14px}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.pill{background:#fff3f7;color:#805065;border-radius:20px;padding:5px 9px;font-size:12px}
+dialog{border:0;border-radius:22px;padding:20px;width:min(92vw,440px);box-shadow:0 20px 60px #0003}dialog::backdrop{background:#21151b66}.actions{display:flex;gap:8px;margin-top:12px}.actions button{flex:1}
+@media(min-width:600px){header{padding-left:max(20px,calc((100vw - 640px)/2));padding-right:max(20px,calc((100vw - 640px)/2))}}
+</style>
+</head>
+<body>
+<header><div class="top"><div><div class="brand">♡ My Calories</div><div class="sub">Το ημερολόγιο διατροφής σου</div></div><span class="pill">Η δική σου καταγραφή</span></div></header>
+<main>
+<section id="home" class="page active">
+ <div class="card">
+  <div class="datebar"><button id="prevDay" aria-label="Προηγούμενη ημέρα">‹</button><b id="dateLabel"></b><button id="nextDay" aria-label="Επόμενη ημέρα">›</button></div>
+  <div class="kcal"><div><div class="muted">Έχεις καταναλώσει</div><div class="big"><span id="total">0</span> <span style="font-size:15px">kcal</span></div></div><div style="text-align:right"><div class="muted">Στόχος ημέρας</div><b style="font-size:22px" id="goalLabel">1600</b><div class="muted">kcal</div></div></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="stats"><div class="stat"><b id="remaining">1600</b><span class="muted">Υπόλοιπο</span></div><div class="stat"><b id="foodCount">0</b><span class="muted">Τρόφιμα</span></div><div class="stat"><b id="percent">0%</b><span class="muted">Στόχου</span></div></div>
+ </div>
+ <div class="card"><h2>Τα γεύματά σου</h2><div id="meals"></div><button style="width:100%;margin-top:12px" id="addBtn">＋ Προσθήκη τροφίμου</button></div>
+ <p class="note">Οι θερμίδες είναι εκτιμήσεις από βάση τροφίμων. Έλεγχε πάντα την ετικέτα του προϊόντος όταν υπάρχει.</p>
+</section>
+<section id="history" class="page">
+ <div class="card"><h2>Ιστορικό ημερών</h2><div id="historyList"></div></div>
+ <div class="card"><h2>Καταγραφή βάρους</h2><div class="row"><div class="field"><label for="weight">Βάρος (kg)</label><input id="weight" type="number" min="1" max="400" step=".1" placeholder="π.χ. 62.5"></div><button id="saveWeight">Αποθήκευση</button></div><div id="weightList"></div></div>
+</section>
+<section id="settings" class="page">
+ <div class="card"><h2>Ρυθμίσεις</h2><div class="field"><label for="goal">Ημερήσιος στόχος θερμίδων (kcal)</label><input id="goal" type="number" min="500" max="10000" step="50"></div><button id="saveGoal">Αποθήκευση στόχου</button></div>
+ <div class="card"><h2>Τα δεδομένα σου</h2><p class="note">Οι καταχωρίσεις αποθηκεύονται σε αυτή τη συσκευή και σε αυτόν τον browser. Δεν δημιουργείται online λογαριασμός.</p><button class="secondary" id="export">Εξαγωγή αντιγράφου (JSON)</button><div style="height:9px"></div><button class="secondary" id="install" hidden>Εγκατάσταση εφαρμογής</button></div>
+ <div class="card"><h2>Σημαντικό</h2><p class="note">Η εφαρμογή είναι εργαλείο καταγραφής, όχι ιατρική συμβουλή. Ο ημερήσιος στόχος είναι ενδεικτικός και μπορείς να τον αλλάξεις. Οι αναζητήσεις online χρειάζονται σύνδεση στο διαδίκτυο.</p></div>
+</section>
+</main>
+<nav class="tabs"><button class="active" data-page="home">⌂<br>Σήμερα</button><button data-page="history">▤<br>Ιστορικό</button><button data-page="settings">⚙<br>Ρυθμίσεις</button></nav>
+<dialog id="foodDialog">
+ <h2>Προσθήκη τροφίμου</h2>
+ <div class="field"><label for="foodSearch">Αναζήτησε τρόφιμο</label><input id="foodSearch" placeholder="π.χ. μήλο, ψωμί, γιαούρτι"></div>
+ <div class="note">Γράψε ελληνικά ή αγγλικά. Δοκίμασε και την εμπορική ονομασία.</div>
+ <div id="results" class="search-results"></div>
+ <div id="chosen" hidden>
+  <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+  <b id="chosenName"></b><div class="muted" id="chosenInfo"></div>
+  <div class="row" style="margin-top:12px"><div class="field"><label for="grams">Ποσότητα (γραμμάρια)</label><input id="grams" type="number" min="1" step="1" value="100"></div><div class="field"><label for="mealType">Γεύμα</label><select id="mealType"><option>Πρωινό</option><option>Μεσημεριανό</option><option>Βραδινό</option><option>Σνακ</option></select></div></div>
+  <div class="field"><label for="kcal100">Θερμίδες ανά 100 g</label><input id="kcal100" type="number" min="0" step=".1"></div>
+  <div class="actions"><button class="secondary" id="cancelFood">Άκυρο</button><button id="saveFood">Προσθήκη</button></div>
+ </div>
+ <div class="actions" id="closeRow"><button class="secondary" id="closeDialog">Κλείσιμο</button></div>
+</dialog>
+<script>
+const $=id=>document.getElementById(id);
+const KEY='myCalories_v1';
+const foods=[
+ ['μήλο','apple',52],['μπανάνα','banana',89],['πορτοκάλι','orange',47],['αχλάδι','pear',57],['φράουλες','strawberry',32],
+ ['ψωμί λευκό','white bread',266],['ψωμί ολικής','whole wheat bread',247],['παξιμάδι','rusk',360],['ρύζι μαγειρεμένο','cooked rice',130],['μακαρόνια μαγειρεμένα','cooked pasta',158],['πατάτα βραστή','boiled potato',87],['πατάτες τηγανητές','french fries',312],
+ ['κοτόπουλο ψητό','roast chicken',190],['μοσχάρι ψητό','roast beef',250],['μπιφτέκι μοσχαρίσιο','beef patty',250],['χοιρινό ψητό','roast pork',242],['αυγό βραστό','boiled egg',155],['τόνος σε νερό','tuna in water',116],
+ ['φέτα','feta cheese',265],['γκούντα','gouda cheese',356],['γραβιέρα','graviera cheese',400],['γιαούρτι 2%','greek yogurt 2%',73],['γάλα 1,5%','milk 1.5%',46],['κρέμα γάλακτος','cream',300],
+ ['ντομάτα','tomato',18],['αγγούρι','cucumber',15],['μαρούλι','lettuce',15],['καρότο','carrot',41],['μπρόκολο','broccoli',34],
+ ['ελαιόλαδο','olive oil',884],['βούτυρο','butter',717],['αμύγδαλα','almonds',579],['καρύδια','walnuts',654],['σοκολάτα γάλακτος','milk chocolate',535],['μέλι','honey',304],['ζάχαρη','sugar',387],['βρώμη','oats',389],['δημητριακά','cereal',380],
+ ['πίτσα','pizza',266],['σουβλάκι κοτόπουλο','chicken souvlaki',190],['καρμπονάρα','carbonara',220],['μουσακάς','moussaka',180],['φακές μαγειρεμένες','cooked lentils',116],['φασόλια μαγειρεμένα','cooked beans',127]
+];
+let state=load(), selected=null, selectedDate=today();
+function today(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{goal:1600,days:{},weights:[]}}catch(e){return {goal:1600,days:{},weights:[]}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function dayData(date=selectedDate){return state.days[date]||(state.days[date]=[])}
+function fmtDate(s){return new Date(s+'T12:00:00').toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+function render(){
+ $('dateLabel').textContent=fmtDate(selectedDate);let items=dayData(),total=items.reduce((a,x)=>a+x.kcal,0),goal=Number(state.goal)||1600,remaining=goal-total;
+ $('total').textContent=Math.round(total).toLocaleString('el-GR');$('goalLabel').textContent=goal.toLocaleString('el-GR');$('remaining').textContent=Math.round(remaining).toLocaleString('el-GR');$('foodCount').textContent=items.length;$('percent').textContent=Math.round(total/goal*100)+'%';$('bar').style.width=Math.min(100,total/goal*100)+'%';
+ const groups=['Πρωινό','Μεσημεριανό','Βραδινό','Σνακ'];$('meals').innerHTML=groups.map(g=>{let arr=items.filter(x=>x.meal===g),sum=arr.reduce((a,x)=>a+x.kcal,0);return `<div style="padding-top:9px"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><h3>${g}</h3><span class="muted">${Math.round(sum)} kcal</span></div>${arr.length?arr.map(x=>`<div class="meal"><div class="meal-left"><div class="meal-name">${esc(x.name)}</div><div class="meal-meta">${x.grams} g · ${x.per100} kcal/100 g</div></div><span class="meal-kcal">${Math.round(x.kcal)} kcal</span><button class="ghost" data-del="${x.id}" aria-label="Διαγραφή">✕</button></div>`).join(''):'<div class="muted" style="padding:4px 0 10px">Δεν έχεις προσθέσει τρόφιμα.</div>'}</div>`}).join('');
+ $('meals').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{state.days[selectedDate]=dayData().filter(x=>x.id!==b.dataset.del);save();render()});
+ renderHistory();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderHistory(){
+ let keys=Object.keys(state.days).filter(k=>state.days[k].length).sort().reverse();
+ $('historyList').innerHTML=keys.length?keys.map(k=>{let n=state.days[k].reduce((a,x)=>a+x.kcal,0);return `<div class="meal"><div class="meal-left"><b>${fmtDate(k)}</b></div><span class="meal-kcal">${Math.round(n)} kcal</span></div>`}).join(''):'<div class="empty">Δεν υπάρχουν ακόμη καταχωρίσεις.</div>';
+ $('weightList').innerHTML=state.weights.length?state.weights.slice().reverse().map(w=>`<div class="meal"><span>${fmtDate(w.date)}</span><b>${w.kg} kg</b></div>`).join(''):'<div class="muted">Δεν έχεις καταγράψει βάρος.</div>';
+}
+function openFood(){selected=null;$('chosen').hidden=true;$('closeRow').hidden=false;$('foodSearch').value='';$('results').innerHTML='';$('foodDialog').showModal();$('foodSearch').focus()}
+function choose(f){selected={name:f.name,per100:Number(f.kcal)};$('chosenName').textContent=f.name;$('chosenInfo').textContent=f.source||'Ενσωματωμένη βάση τροφίμων · ενδεικτική τιμή';$('kcal100').value=selected.per100;$('grams').value=100;$('chosen').hidden=false;$('closeRow').hidden=true}
+function localSearch(q){let ql=q.toLocaleLowerCase('el');return foods.filter(f=>(f[0]+' '+f[1]).toLocaleLowerCase('el').includes(ql)).slice(0,12).map(f=>({name:f[0],kcal:f[2],source:'Ενδεικτική τιμή ανά 100 g'}))}
+let searchTimer;
+async function searchFood(q){
+ if(!q.trim()){$('results').innerHTML='';return}
+ let local=localSearch(q);$('results').innerHTML=local.map((f,i)=>`<div class="result" data-local="${i}">${esc(f.name)}<small>${f.kcal} kcal / 100 g · ενσωματωμένη βάση</small></div>`).join('')||'<div class="muted" style="padding:10px">Δεν βρέθηκε στην ενσωματωμένη βάση. Αναζήτηση online…</div>';
+ $('results').querySelectorAll('[data-local]').forEach(el=>el.onclick=()=>choose(local[Number(el.dataset.local)]));
+ try{
+  const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=12&fields=product_name,product_name_el,nutriments,brands';
+  const res=await fetch(url,{headers:{'Accept':'application/json'}});if(!res.ok)return;const data=await res.json();
+  const online=(data.products||[]).filter(p=>p.nutriments&&Number.isFinite(Number(p.nutriments['energy-kcal_100g']))&&Number(p.nutriments['energy-kcal_100g'])>0).slice(0,10).map(p=>({name:p.product_name_el||p.product_name||'Προϊόν',kcal:Number(p.nutriments['energy-kcal_100g']),source:'Open Food Facts · '+(p.brands||'')}));
+  if(online.length){$('results').innerHTML='<div class="muted" style="padding:6px 2px">Αποτελέσματα online</div>'+online.map((f,i)=>`<div class="result" data-online="${i}">${esc(f.name)}<small>${f.kcal} kcal / 100 g · ${esc(f.source)}</small></div>`).join('')+$('results').innerHTML;$('results').querySelectorAll('[data-online]').forEach(el=>el.onclick=()=>choose(online[Number(el.dataset.online)]))}
+ }catch(e){/* offline: local results remain available */}
+}
+$('foodSearch').addEventListener('input',e=>{clearTimeout(searchTimer);let q=e.target.value;searchTimer=setTimeout(()=>searchFood(q),350)});
+$('addBtn').onclick=openFood;
+$('closeDialog').onclick=()=>$('foodDialog').close();$('cancelFood').onclick=()=>{$('chosen').hidden=true;$('closeRow').hidden=false};
+$('saveFood').onclick=()=>{let grams=Number($('grams').value),per=Number($('kcal100').value);if(!selected||grams<=0||per<0||!Number.isFinite(grams)||!Number.isFinite(per)){alert('Έλεγξε την ποσότητα και τις θερμίδες.');return}dayData().push({id:Date.now().toString()+Math.random(),name:selected.name,grams,per100:per,meal:$('mealType').value,kcal:grams*per/100});save();$('foodDialog').close();render()};
+$('prevDay').onclick=()=>{let d=new Date(selectedDate+'T12:00:00');d.setDate(d.getDate()-1);selectedDate=todayFrom(d);render()};
+$('nextDay').onclick=()=>{let d=new Date(selectedDate+'T12:00:00');d.setDate(d.getDate()+1);selectedDate=todayFrom(d);render()};
+function todayFrom(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='settings')$('goal').value=state.goal});
+$('saveGoal').onclick=()=>{let n=Number($('goal').value);if(n<500||n>10000){alert('Βάλε έναν στόχο από 500 έως 10.000 kcal.');return}state.goal=n;save();render();alert('Ο στόχος αποθηκεύτηκε.')};
+$('saveWeight').onclick=()=>{let n=Number($('weight').value);if(n<=0||n>400){alert('Βάλε έγκυρο βάρος.');return}state.weights.push({date:today(),kg:n});save();$('weight').value='';renderHistory()};
+$('export').onclick=()=>{let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-calories-backup.json';a.click();URL.revokeObjectURL(a.href)};
+let deferredPrompt;$('install').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('install').hidden=true}else alert('Άνοιξε το μενού του browser και επίλεξε «Προσθήκη στην αρχική οθόνη».')};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('install').hidden=false});
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+render();
+</script>
+</body></html>
